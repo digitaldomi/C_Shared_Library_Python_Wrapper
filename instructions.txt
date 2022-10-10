@@ -1,0 +1,55 @@
+https://www.cprogramming.com/tutorial/shared-libraries-linux-gcc.html
+
+
+//--------------------------------------------------------------------
+MAKE .SO LIBRARY
+Create object file
+gcc -c -Wall -Werror -fpic foo.c
+
+Create shared library from object file
+gcc -shared -o libfoo.so foo.o
+
+
+//--------------------------------------------------------------------
+LINK WITH SHARED LIBRARY
+
+    //PATH_TO_LIBRARY                         //LIBRARY NAME (START: LIB, END: .so or .a)
+gcc -L/home/username/foo -Wall -o test main.c -lfoo
+
+Non-standard path: Add to library paths (MAY NOT BE BEST OPTION)
+(export LD_LIBRARY_PATH=/home/domi/Desktop/Python_C_Wrapper/foo:$LD_LIBRARY_PATH)
+--> unset LD_LIBRARY_PATH
+
+USER RPATH INSTEAD FOR DIRECT PATH DEFINITION
+gcc -L/home/domi/Desktop/Python_C_Wrapper -Wl,-rpath=/home/domi/Desktop/Python_C_Wrapper -Wall -o test main.c -lfoo
+
+ADD LIBRARY TO GLOBAL /usr/lib/ directory:
+cp /home/domi/Desktop/Python_C_Wrapper/libfoo.so /usr/lib
+chmod 0755 /usr/lib/libfoo.so
+ldconfig
+
+CHECK IF IT WORKED
+ldconfig -p | grep foo
+
+
+//---------------------------------------------------------------------
+from ctypes import *
+from sys import platform
+
+shared_lib_path = "./libfoo.so"
+if platform.startswith('win32'):
+    shared_lib_path = "./libfoo.dll"
+try:
+    add_lib = CDLL(shared_lib_path)
+    print("Successfully loaded ", add_lib)
+except Exception as e:
+    print(e)
+
+add_lib.foo()
+
+CONSOLE OUTPUT:
+Successfully loaded  <CDLL './libfoo.so', handle 55f543513b70 at 0x7f37af8df610>
+Hello, I am a shared library
+
+
+
